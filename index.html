@@ -11,7 +11,7 @@
   :root{
     --paper:#faf6ef; --surface:#ffffff; --ink:#20252b; --muted:#6c7680;
     --line:#e8e2d6; --teal:#0f766e; --teal-d:#0b5a53; --teal-soft:#e4f1ef;
-    --coral:#e2603f; --coral-d:#c94e30; --ocean:#b4cad1; --land:#d8cdb6; --land-s:#bcae92;
+    --coral:#e2603f; --coral-d:#c94e30; --ocean:#b4cad1; --land:#d8cdb6; --land-s:#bcae92; --pin:#e2603f;
     --shadow:0 6px 24px rgba(40,35,25,.10); --shadow-s:0 2px 8px rgba(40,35,25,.08);
     --r:14px;
   }
@@ -53,7 +53,7 @@
   #worldmap.picking{cursor:crosshair}
   .land{fill:var(--land);stroke:var(--land-s);stroke-width:.6;stroke-linejoin:round}
   .pin{cursor:pointer}
-  .pin path{fill:var(--coral);stroke:#fff;stroke-width:1.4;filter:drop-shadow(0 1px 1.2px rgba(0,0,0,.4))}
+  .pin path{fill:var(--pin);stroke:#fff;stroke-width:1.4;filter:drop-shadow(0 1px 1.2px rgba(0,0,0,.4))}
   .pin.sel path{fill:var(--teal)}
   .pin .hole{fill:#fff;stroke:none}
   .pin text{fill:#fff;font:700 13px Inter,sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
@@ -117,6 +117,7 @@
     #drawer.on{transform:none}
     nav.tabs button{font-size:13px}
     .addbtn .lbl{display:none}
+    .row2{grid-template-columns:1fr}
   }
 
   /* ---------- BUTTONS ---------- */
@@ -212,10 +213,42 @@
   .auth-msg{min-height:18px;font-size:12.5px;color:var(--coral-d);text-align:center;margin-top:10px;line-height:1.4}
   .auth-msg.ok{color:var(--teal-d)}
   .auth-toggle{display:block;width:100%;background:transparent;border:0;color:var(--teal);font:600 13px Inter,sans-serif;margin-top:14px;cursor:pointer}
+  .hbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .avatar{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:#efe9df center/cover no-repeat;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden;flex:0 0 auto}
+  .avatar svg{width:22px;height:22px}
+  .gear{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .gear:hover,.avatar:hover{border-color:var(--teal);color:var(--teal)}
+  .sheet{position:fixed;inset:0;z-index:92;display:none;align-items:flex-end;justify-content:center}
+  .sheet.on{display:flex}
+  .sheet-bg{position:absolute;inset:0;background:rgba(25,20,12,.4)}
+  .sheet-card{position:relative;background:var(--surface);width:100%;max-width:460px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);box-shadow:var(--shadow)}
+  @media(min-width:561px){ .sheet{align-items:center} .sheet-card{border-radius:18px} }
+  .sheet-card h2{font-family:Fraunces,serif;font-size:21px;margin:0 0 16px;font-weight:600}
+  .sheet-card .sclose{position:absolute;right:16px;top:16px;border:0;background:#f0ece3;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--muted)}
+  .avatar-edit{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px}
+  .avatar-big{width:88px;height:88px;border-radius:50%;border:2px solid var(--line);background:#efe9df center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden}
+  .avatar-big svg{width:42px;height:42px}
+  .link-btn{background:transparent;border:0;color:var(--teal);font:600 13px Inter,sans-serif;cursor:pointer;padding:2px 4px}
+  .swatches{display:grid;gap:10px;margin-bottom:10px}
+  .swatch-row{display:flex;align-items:center;gap:12px}
+  .swatch-row label{flex:1;font-size:14px;font-weight:600;color:#3c454d}
+  .swatch-row input[type=color]{width:48px;height:34px;border:1px solid var(--line);border-radius:9px;background:none;padding:2px;cursor:pointer}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .preset{border:1px solid var(--line);border-radius:10px;padding:7px 11px 7px 8px;background:var(--surface);cursor:pointer;font:600 12px Inter,sans-serif;display:flex;align-items:center;gap:7px;color:var(--ink)}
+  .preset:hover{border-color:var(--teal)}
+  .preset .dots{display:flex}
+  .preset .dots i{width:12px;height:12px;border-radius:50%;display:block;margin-left:-4px;border:1.5px solid var(--surface)}
+  .sheet-card .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#3c454d}
+  .sheet-card .field input,.sheet-card .field textarea{width:100%;font:inherit;font-size:15px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:14px}
+  .sheet-card .field textarea{min-height:80px;resize:vertical;line-height:1.5}
 </style>
 </head>
 <body>
 <header>
+  <div class="hbar">
+    <button class="avatar" id="avatarBtn" title="Your profile"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></button>
+    <button class="gear" id="gearBtn" title="Settings">⚙</button>
+  </div>
   <div class="brand">
     <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <path d="M16 2C9.9 2 5 6.8 5 12.9 5 21 16 30 16 30s11-9 11-17.1C27 6.8 22.1 2 16 2z" fill="#e2603f"/>
@@ -336,9 +369,44 @@
   </div>
   <div class="dr-body" id="drBody"></div>
   <div class="dr-foot">
-    <button class="btn ghost sm" id="drRename">✎ Rename</button>
+    <button class="btn ghost sm" id="drRename">✎ Edit name</button>
     <button class="btn primary sm" id="drAddVisit" style="flex:1">＋ Add visit</button>
     <button class="btn danger sm" id="drDelete">Delete</button>
+  </div>
+</div>
+
+<div class="sheet" id="profileSheet">
+  <div class="sheet-bg" data-close="profile"></div>
+  <div class="sheet-card">
+    <button class="sclose" data-close="profile">✕</button>
+    <h2>Your profile</h2>
+    <div class="avatar-edit">
+      <div class="avatar-big" id="pfAvatar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></div>
+      <button class="link-btn" id="pfPhotoBtn">Upload photo</button>
+      <button class="link-btn" id="pfPhotoClear" style="color:var(--muted);display:none">Remove photo</button>
+      <input type="file" id="pfPhotoInput" accept="image/*" style="display:none">
+    </div>
+    <div class="field"><label for="pfName">Display name</label><input id="pfName" type="text" placeholder="Your name"></div>
+    <div class="field"><label for="pfBio">About you</label><textarea id="pfBio" placeholder="A short line about yourself…"></textarea></div>
+    <button class="btn primary" id="pfSave" style="width:100%">Save profile</button>
+  </div>
+</div>
+
+<div class="sheet" id="settingsSheet">
+  <div class="sheet-bg" data-close="settings"></div>
+  <div class="sheet-card">
+    <button class="sclose" data-close="settings">✕</button>
+    <h2>Settings</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 10px;font-weight:600">Quick themes</p>
+    <div class="presets" id="presets"></div>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 10px;font-weight:600">Custom colors</p>
+    <div class="swatches">
+      <div class="swatch-row"><label>Land</label><input type="color" id="setLand"></div>
+      <div class="swatch-row"><label>Sea</label><input type="color" id="setOcean"></div>
+      <div class="swatch-row"><label>Background</label><input type="color" id="setBg"></div>
+      <div class="swatch-row"><label>Pins</label><input type="color" id="setPin"></div>
+    </div>
+    <button class="link-btn" id="setReset">Reset to defaults</button>
   </div>
 </div>
 
@@ -713,6 +781,7 @@ try{ CITIES=JSON.parse(document.getElementById("d-cities").textContent); citiesR
 const SUPA_URL="https://fogkotgzaseheacwqbeu.supabase.co";
 const SUPA_KEY="sb_publishable_OUZA54sZY4P4yyH8JJt0rA_L5BDbxwh";
 let sb=null, user=null, currentUid=null, authMode="in";
+let profile={}, settings={}, pendingAvatar;
 function setSync(msg,cls){ const el=$("#syncStatus"); if(!el) return; el.textContent=msg||""; el.className="sync "+(cls||""); }
 function authMsg(m,ok){ const el=$("#authMsg"); if(!el) return; el.textContent=m||""; el.className="auth-msg"+(ok?" ok":""); }
 function initAuth(){
@@ -725,27 +794,38 @@ function initAuth(){
 function handleSession(session){
   const u=(session&&session.user)?session.user:null;
   if(u){ user=u; showApp(); if(u.id!==currentUid){ currentUid=u.id; loadCloud(); } }
-  else { user=null; currentUid=null; places=[]; renderAll(); showAuthScreen(); }
+  else { user=null; currentUid=null; places=[]; profile={}; settings={}; applySettings(); applyProfile(); renderAll(); showAuthScreen(); }
 }
 function showAuthScreen(){ $("#authScreen").style.display="flex"; }
 function showApp(){ $("#authScreen").style.display="none"; if(user) $("#whoEmail").textContent=user.email||""; }
 async function loadCloud(){
   setSync("Loading…","wait");
   try{
-    const {data,error}=await sb.from("uplace_data").select("places").eq("user_id",currentUid).maybeSingle();
+    const {data,error}=await sb.from("uplace_data").select("*").eq("user_id",currentUid).maybeSingle();
     if(error) throw error;
     places=(data&&Array.isArray(data.places))?data.places:[];
+    profile=(data&&data.profile&&typeof data.profile==="object")?data.profile:{};
+    settings=(data&&data.settings&&typeof data.settings==="object")?data.settings:{};
+    applySettings(); applyProfile();
     fitted=false; renderAll(); fitPinsOnce();
     $("#mapHint").innerHTML=places.length?`Drag to pan · scroll to zoom · tap a <b>pin</b> for your notes`:`This is your blank world — <b>add a place</b> to drop your first pin`;
     setSync("Synced","ok"); maybeMigrate();
-  }catch(e){ setSync("Offline","err"); toast("Couldn't load your places. Check your connection."); }
+  }catch(e){ setSync("Offline","err"); toast("Couldn't load: "+((e&&e.message)||"unknown error")); }
 }
 let saveT=null;
 function scheduleCloudSave(){ if(!sb||!currentUid) return; setSync("Saving…","wait"); clearTimeout(saveT); saveT=setTimeout(doCloudSave,600); }
 async function doCloudSave(){
   if(!sb||!currentUid) return;
-  try{ const {error}=await sb.from("uplace_data").upsert({user_id:currentUid,places,updated_at:new Date().toISOString()}); if(error) throw error; setSync("Synced","ok"); }
-  catch(e){ setSync("Save failed","err"); }
+  try{
+    let {error}=await sb.from("uplace_data").upsert({user_id:currentUid,places,profile,settings,updated_at:new Date().toISOString()});
+    if(error && /profile|settings|column|schema cache|PGRST204/i.test((error.message||"")+(error.hint||""))){
+      const r2=await sb.from("uplace_data").upsert({user_id:currentUid,places,updated_at:new Date().toISOString()});
+      if(r2.error) throw r2.error;
+      setSync("Synced","ok"); return;
+    }
+    if(error) throw error;
+    setSync("Synced","ok");
+  }catch(e){ setSync("Save failed","err"); toast("Save failed: "+((e&&e.message)||"unknown error")); }
 }
 function maybeMigrate(){
   try{ const r=localStorage.getItem(LS); if(!r) return; const d=JSON.parse(r); const local=(d&&Array.isArray(d.places))?d.places:[];
@@ -783,6 +863,75 @@ $("#authToggle").onclick=()=>{ authMode=authMode==="in"?"up":"in"; updateAuthMod
 $("#authEmail").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("#authPass").focus(); } });
 $("#authPass").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); doAuth(); } });
 $("#signOut").onclick=async()=>{ try{ await sb.auth.signOut(); }catch(_){} };
+
+/* ---------------- theme / settings ---------------- */
+const DEF={land:"#d8cdb6",ocean:"#b4cad1",bg:"#faf6ef",pin:"#e2603f"};
+const PRESETS=[
+  {name:"Classic",land:"#d8cdb6",ocean:"#b4cad1",bg:"#faf6ef",pin:"#e2603f"},
+  {name:"Night map",land:"#39414f",ocean:"#222a38",bg:"#eceff3",pin:"#f0a24b"},
+  {name:"Ocean",land:"#e8e2d0",ocean:"#8fc7d6",bg:"#eef6f6",pin:"#0f766e"},
+  {name:"Forest",land:"#cdd9b0",ocean:"#a8c6bf",bg:"#f3f5ec",pin:"#4b7a3f"},
+  {name:"Sand",land:"#e3d4a8",ocean:"#cfe0dd",bg:"#fbf6ea",pin:"#d9893f"},
+  {name:"Slate",land:"#cfd4da",ocean:"#aeb8c4",bg:"#f4f6f8",pin:"#41566e"}
+];
+function lum(hex){ hex=(hex||"").replace("#",""); if(hex.length<6) return 1; const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16); return (0.299*r+0.587*g+0.114*b)/255; }
+function cur(k){ return (settings&&settings[k])||DEF[k]; }
+function applySettings(){
+  const r=document.documentElement.style, land=cur("land"),ocean=cur("ocean"),bg=cur("bg"),pin=cur("pin");
+  r.setProperty("--land",land); r.setProperty("--ocean",ocean); r.setProperty("--paper",bg); r.setProperty("--pin",pin);
+  r.setProperty("--land-s", lum(land)<0.5 ? "rgba(255,255,255,.22)" : "rgba(60,50,35,.18)");
+  const sl=$("#setLand"); if(sl){ sl.value=land; $("#setOcean").value=ocean; $("#setBg").value=bg; $("#setPin").value=pin; }
+}
+function setColor(k,v){ settings=Object.assign({},settings,{[k]:v}); applySettings(); scheduleCloudSave(); }
+function renderPresets(){
+  const box=$("#presets"); box.innerHTML="";
+  PRESETS.forEach(p=>{ const b=document.createElement("button"); b.className="preset";
+    b.innerHTML=`<span class="dots"><i style="background:${p.ocean}"></i><i style="background:${p.land}"></i><i style="background:${p.pin}"></i></span>${esc(p.name)}`;
+    b.onclick=()=>{ settings={land:p.land,ocean:p.ocean,bg:p.bg,pin:p.pin}; applySettings(); scheduleCloudSave(); };
+    box.appendChild(b); });
+}
+["setLand","setOcean","setBg","setPin"].forEach((id,i)=>{ const key=["land","ocean","bg","pin"][i];
+  $("#"+id).addEventListener("input",function(){ setColor(key,this.value); }); });
+$("#setReset").onclick=()=>{ settings={}; applySettings(); scheduleCloudSave(); toast("Reset to defaults"); };
+
+/* ---------------- profile ---------------- */
+const AVSVG=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg>`;
+function applyProfile(){
+  const btn=$("#avatarBtn"); if(!btn) return;
+  if(profile&&profile.avatar){ btn.style.backgroundImage=`url(${profile.avatar})`; btn.innerHTML=""; }
+  else { btn.style.backgroundImage=""; btn.innerHTML=AVSVG; }
+}
+function openProfile(){
+  $("#pfName").value=(profile&&profile.name)||"";
+  $("#pfBio").value=(profile&&profile.bio)||"";
+  const big=$("#pfAvatar");
+  if(profile&&profile.avatar){ big.style.backgroundImage=`url(${profile.avatar})`; big.innerHTML=""; $("#pfPhotoClear").style.display="inline"; }
+  else { big.style.backgroundImage=""; big.innerHTML=AVSVG; $("#pfPhotoClear").style.display="none"; }
+  pendingAvatar=undefined;
+  $("#profileSheet").classList.add("on");
+}
+$("#pfPhotoBtn").onclick=()=>$("#pfPhotoInput").click();
+$("#pfPhotoInput").addEventListener("change",function(){
+  const f=this.files[0]; this.value=""; if(!f) return;
+  const img=new Image(), url=URL.createObjectURL(f);
+  img.onload=()=>{ URL.revokeObjectURL(url); const S=256, cv=document.createElement("canvas"); cv.width=S; cv.height=S;
+    const ctx=cv.getContext("2d"); const side=Math.min(img.width,img.height); const sx=(img.width-side)/2, sy=(img.height-side)/2;
+    ctx.drawImage(img,sx,sy,side,side,0,0,S,S); pendingAvatar=cv.toDataURL("image/jpeg",0.82);
+    const big=$("#pfAvatar"); big.style.backgroundImage=`url(${pendingAvatar})`; big.innerHTML=""; $("#pfPhotoClear").style.display="inline"; };
+  img.onerror=()=>{ URL.revokeObjectURL(url); toast("Couldn't read that image"); };
+  img.src=url;
+});
+$("#pfPhotoClear").onclick=()=>{ pendingAvatar=null; const big=$("#pfAvatar"); big.style.backgroundImage=""; big.innerHTML=AVSVG; $("#pfPhotoClear").style.display="none"; };
+$("#pfSave").onclick=()=>{
+  profile=Object.assign({},profile,{name:$("#pfName").value.trim(),bio:$("#pfBio").value.trim()});
+  if(pendingAvatar!==undefined){ if(pendingAvatar) profile.avatar=pendingAvatar; else delete profile.avatar; }
+  applyProfile(); scheduleCloudSave(); closeSheet("profile"); toast("Profile saved");
+};
+function closeSheet(which){ $(which==="profile"?"#profileSheet":"#settingsSheet").classList.remove("on"); }
+$("#avatarBtn").onclick=openProfile;
+$("#gearBtn").onclick=()=>{ renderPresets(); applySettings(); $("#settingsSheet").classList.add("on"); };
+document.querySelectorAll("[data-close]").forEach(el=>el.onclick=()=>closeSheet(el.getAttribute("data-close")));
+
 initAuth();
 </script>
 </body>
