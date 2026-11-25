@@ -97,8 +97,19 @@
   .visit .vdate{font-weight:600;font-size:14.5px}
   .visit .vdur{color:var(--teal);font-size:12.5px;font-weight:600;background:var(--teal-soft);padding:2px 8px;border-radius:6px}
   .visit .vnotes{margin:7px 0 0;font-size:13.5px;color:#3c454d;line-height:1.5;white-space:pre-wrap}
-  .visit .vdel{float:right;border:0;background:transparent;color:#c0b9ab;cursor:pointer;font-size:12px}
+  .visit .vacts{float:right;display:flex;gap:12px}
+  .visit .vedit,.visit .vdel{border:0;background:transparent;cursor:pointer;font-size:12px;font-weight:600;padding:0}
+  .visit .vedit{color:var(--teal)}
+  .visit .vedit:hover{color:var(--teal-d)}
+  .visit .vdel{color:#c0b9ab}
   .visit .vdel:hover{color:var(--coral)}
+  .visit .efield{margin-bottom:10px}
+  .visit .efield label{display:block;font-size:12px;font-weight:600;color:#3c454d;margin-bottom:4px}
+  .visit .efield input,.visit .efield textarea{width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+  .visit .efield textarea{min-height:70px;resize:vertical;line-height:1.5}
+  .visit .efield input:focus,.visit .efield textarea:focus{outline:2px solid var(--teal-soft);border-color:var(--teal)}
+  .visit .erow{display:flex;gap:8px;margin-top:4px}
+  .rename-input{font:600 20px Fraunces,serif;width:calc(100% - 30px);border:1px solid var(--teal);border-radius:8px;padding:4px 8px}
   .dr-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px}
   @media(max-width:560px){
     #drawer{top:auto;bottom:0;right:0;width:100%;max-width:100%;height:82vh;border-left:0;border-top:1px solid var(--line);
@@ -124,7 +135,9 @@
   .search{flex:1;min-width:200px;position:relative}
   .search input{width:100%;font:inherit;font-size:15px;padding:12px 14px 12px 40px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
   .search input:focus{outline:2px solid var(--teal-soft);border-color:var(--teal)}
-  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  .search input{padding-left:42px}
+  .field .search input{padding-left:42px}
   .stats{display:flex;gap:16px;color:var(--muted);font-size:12.5px;margin:0 2px 14px}
   .stats b{color:var(--ink);font-size:15px;font-weight:700;font-family:Fraunces,serif}
   .stats div{display:flex;flex-direction:column;line-height:1.25}
@@ -323,8 +336,9 @@
   </div>
   <div class="dr-body" id="drBody"></div>
   <div class="dr-foot">
-    <button class="btn primary sm" id="drAddVisit" style="flex:1">＋ Add another visit</button>
-    <button class="btn danger sm" id="drDelete">Delete place</button>
+    <button class="btn ghost sm" id="drRename">✎ Rename</button>
+    <button class="btn primary sm" id="drAddVisit" style="flex:1">＋ Add visit</button>
+    <button class="btn danger sm" id="drDelete">Delete</button>
   </div>
 </div>
 
@@ -478,6 +492,7 @@ function fitToPins(){
 }
 
 /* ---------------- drawer ---------------- */
+let editVid=null;
 function openDrawer(id){
   const p=places.find(x=>x.id===id); if(!p) return;
   currentPlaceId=id;
@@ -486,18 +501,49 @@ function openDrawer(id){
   const cn=countryName(p.cc);
   $("#drMeta").innerHTML=`<span class="chip">${esc(p.visits.length)} visit${p.visits.length>1?"s":""}</span>`+(cn?`<span class="chip">${esc(cn)}</span>`:"");
   const vs=[...p.visits].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("#drBody").innerHTML=vs.map(v=>`
-    <div class="visit">
-      <button class="vdel" data-v="${esc(v.id)}">Remove</button>
-      <div class="vtop"><span class="vdate">${esc(fmtDate(v.date))}</span>${v.duration?`<span class="vdur">${esc(v.duration)}</span>`:""}</div>
-      ${v.notes?`<p class="vnotes">${esc(v.notes)}</p>`:`<p class="vnotes" style="color:#aba396">No notes.</p>`}
-    </div>`).join("");
-  $("#drBody").querySelectorAll(".vdel").forEach(b=>b.onclick=()=>removeVisit(p.id,b.dataset.v));
+  const body=$("#drBody"); body.innerHTML="";
+  vs.forEach(v=>{
+    const div=document.createElement("div"); div.className="visit";
+    if(v.id===editVid){
+      div.classList.add("editing");
+      div.innerHTML=`<div class="efield"><label>When did you visit?</label><input type="date" class="e-date"></div>
+        <div class="efield"><label>How long did you spend?</label><input type="text" class="e-dur" placeholder="e.g. 3 hours, a weekend"></div>
+        <div class="efield"><label>Notes</label><textarea class="e-notes" placeholder="What you did and thought…"></textarea></div>
+        <div class="erow"><button class="btn primary sm e-save" style="flex:1">Save changes</button><button class="btn ghost sm e-cancel">Cancel</button></div>`;
+      div.querySelector(".e-date").value=v.date||"";
+      div.querySelector(".e-dur").value=v.duration||"";
+      div.querySelector(".e-notes").value=v.notes||"";
+      div.querySelector(".e-save").onclick=()=>{
+        v.date=div.querySelector(".e-date").value||"";
+        v.duration=div.querySelector(".e-dur").value.trim();
+        v.notes=div.querySelector(".e-notes").value.trim();
+        editVid=null; persist(); openDrawer(id); toast("Entry updated");
+      };
+      div.querySelector(".e-cancel").onclick=()=>{ editVid=null; openDrawer(id); };
+    } else {
+      div.innerHTML=`<div class="vacts"><button class="vedit">Edit</button><button class="vdel">Remove</button></div>
+        <div class="vtop"><span class="vdate">${esc(fmtDate(v.date))}</span>${v.duration?`<span class="vdur">${esc(v.duration)}</span>`:""}</div>
+        ${v.notes?`<p class="vnotes">${esc(v.notes)}</p>`:`<p class="vnotes" style="color:#aba396">No notes.</p>`}`;
+      div.querySelector(".vedit").onclick=()=>{ editVid=v.id; openDrawer(id); };
+      div.querySelector(".vdel").onclick=()=>removeVisit(p.id,v.id);
+    }
+    body.appendChild(div);
+  });
   $("#scrim").classList.add("on"); $("#drawer").classList.add("on");
   renderMap(); // refresh selected highlight
 }
-function closeDrawer(){ $("#scrim").classList.remove("on"); $("#drawer").classList.remove("on"); currentPlaceId=null; renderMap(); }
+function startRename(){
+  const p=places.find(x=>x.id===currentPlaceId); if(!p) return;
+  const h=$("#drName"); const inp=document.createElement("input"); inp.type="text"; inp.value=p.name; inp.className="rename-input";
+  h.textContent=""; h.appendChild(inp); inp.focus(); inp.select();
+  let done=false;
+  const finish=save=>{ if(done) return; done=true; if(save){ const nv=inp.value.trim(); if(nv&&nv!==p.name){ p.name=nv; persist(); toast("Renamed"); } } openDrawer(currentPlaceId); };
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();finish(true);} else if(e.key==="Escape"){e.preventDefault();finish(false);} });
+  inp.addEventListener("blur",()=>finish(true));
+}
+function closeDrawer(){ $("#scrim").classList.remove("on"); $("#drawer").classList.remove("on"); currentPlaceId=null; editVid=null; renderMap(); }
 $("#drClose").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
+$("#drRename").onclick=startRename;
 $("#drDelete").onclick=async()=>{ const p=places.find(x=>x.id===currentPlaceId); if(!p)return;
   if(await confirmDlg(`Delete "${p.name}" and all ${p.visits.length} of its entries? This can't be undone.`,"Delete place")){ places=places.filter(x=>x.id!==p.id); closeDrawer(); persist(); toast("Place deleted"); } };
 $("#drAddVisit").onclick=()=>{ const p=places.find(x=>x.id===currentPlaceId); if(!p)return;
